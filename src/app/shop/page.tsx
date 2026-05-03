@@ -28,10 +28,19 @@ export default function ShopPage() {
 
   useEffect(() => {
     fetch("https://fakestoreapi.com/products")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
-        setProducts(data);
-        setFiltered(data);
+        const products = Array.isArray(data) ? data : [];
+        setProducts(products);
+        setFiltered(products);
+        setLoading(false);
+      })
+      .catch(() => {
+        setProducts([]);
+        setFiltered([]);
         setLoading(false);
       });
   }, []);

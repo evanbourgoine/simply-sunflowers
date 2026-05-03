@@ -8,11 +8,17 @@ interface Product {
   rating: { rate: number; count: number };
 }
 
-async function getProduct(id: string): Promise<Product> {
-  const res = await fetch(`https://fakestoreapi.com/products/${id}`, {
-    next: { revalidate: 3600 },
-  });
-  return res.json();
+async function getProduct(id: string): Promise<Product | null> {
+  try {
+    const res = await fetch(`https://fakestoreapi.com/products/${id}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.id ? data : null;
+  } catch {
+    return null;
+  }
 }
 
 export default async function ProductPage({
@@ -22,6 +28,21 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
   const product = await getProduct(id);
+
+  if (!product) {
+    return (
+      <div className="bg-linen min-h-screen flex flex-col items-center justify-center gap-4">
+        <span className="text-6xl text-citrus/40">✦</span>
+        <p className="font-display text-3xl text-olive">Product not found.</p>
+        <a
+          href="/shop"
+          className="font-body text-sm tracking-widest uppercase text-olive border border-olive px-6 py-3 hover:bg-olive hover:text-linen transition-colors duration-300"
+        >
+          Back to Shop
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-linen min-h-screen">

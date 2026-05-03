@@ -18,10 +18,16 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 async function getFeaturedProducts(): Promise<Product[]> {
-  const res = await fetch("https://fakestoreapi.com/products?limit=4", {
-    next: { revalidate: 3600 },
-  });
-  return res.json();
+  try {
+    const res = await fetch("https://fakestoreapi.com/products?limit=4", {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
 export default async function FeaturedProducts() {
